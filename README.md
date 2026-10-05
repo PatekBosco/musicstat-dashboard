@@ -1,24 +1,51 @@
-# Music Dashboard Suite
+# MusicStat | Аналитическая панель музыканта
 
-Создай интерфейс музыкального дашборда на React и Tailwind CSS по этому скриншоту. Сделай его адаптивным для всех типов экрана. В таблице треков, если у трека флаг is_locked = true, покажи иконку замочка и заблокируй скачивания. Добавь карточки суммарной аналитики сверху. Подредактируй стилистику, чтобы все смотрелось красиво
+**MusicStat** — это full-stack аналитический дашборд для независимых артистов, разработанный для мониторинга, анализа и визуализации статистики музыкального каталога (на примере реальных данных каталога patekharmonie с платформы PromoDJ).
 
-This project was built with [Lovable](https://lovable.dev).
+Проект разработан в рамках продуктового подхода (роль **Product Generalist / Builder**): от проектирования пользовательского опыта (UI/UX) и архитектуры базы данных до написания кода фронтенда и интеграции с облачной СУБД.
 
-## Build with Lovable
+## 🛠️ Технологический стек
+- **Frontend:** React, TanStack Start (Router), TypeScript, Tailwind CSS, библиотека иконок Lucide-React.
+- **Backend & Database:** Облачная СУБД Supabase (PostgreSQL), REST API.
+- **Инфраструктура:** Локальная сборка на Vite, деплой и хостинг на Vercel.
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/46d338e4-6920-4961-92bb-fe08543b48aa).
+## 📊 Продуктовые фичи и бизнес-логика
+1. **Динамический расчет воронки конверсий (KPI):** Система автоматически запрашивает сырые данные из базы Supabase при загрузке страницы и рассчитывает суммарные прослушивания, скачивания и общий коэффициент конверсии (Conversion Rate) из прослушиваний в скачивания прямо на лету.
+2. **Обработка краевых кейсов (Edge Cases):** Реализована логика для треков-эксклюзивов (с флагом `is_locked = true`), у которых на платформе закрыта возможность скачивания и оценки. На уровне СУБД и фронтенда такие треки корректно изолируются: вместо пустых графиков или нулей интерфейс плавно скрывает кнопки скачивания и выводит статус "Стриминг-эксклюзив", предотвращая ошибки деления на ноль.
+3. **Интерфейс с низкой когнитивной нагрузкой:** Дизайн выполнен в минималистичной темной теме (в стиле Spotify). Реализованы удобные инструменты для менеджера: живой поиск треков по названию, фильтрация каталога по музыкальным жанрам и динамическая сортировка таблицы по любой из метрик.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## 🗄️ Структура базы данных (SQL PostgreSQL)
+Данные музыкального каталога хранятся в реляционной таблице `my_tracks` в Supabase. Пример структуры:
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+```sql
+CREATE TABLE my_tracks (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL, -- Название трека
+    style VARCHAR(100),         -- Музыкальный жанр (Deep House, Techno и др.)
+    plays INT DEFAULT 0,         -- Количество прослушиваний
+    downloads INT DEFAULT 0,     -- Количество скачиваний
+    rating NUMERIC(4, 2) DEFAULT 0.0, -- Рейтинг трека на платформе
+    is_locked BOOLEAN DEFAULT FALSE,  -- Флаг ограничения доступа
+    created_at TIMESTAMP DEFAULT NOW()
+);
 ```
+
+## 🔧 Локальное развертывание
+
+1. Клонируйте репозиторий или скачайте ZIP-архив с кодом проекта.
+2. Установите все необходимые зависимости проекта:
+   ```bash
+   npm install
+   npm install @supabase/supabase-js
+   ```
+3. Создайте файл `.env` в корневом каталоге проекта и укажите ваши приватные ключи для подключения к Supabase:
+   ```env
+   VITE_SUPABASE_URL=https://supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-public-key
+   ```
+4. Запустите локальный сервер разработки:
+   ```bash
+   npm run dev
+   ```
+5. Откройте в браузере страницу по адресу: `http://localhost:8080/`
+
